@@ -16,7 +16,7 @@ jobs:
       - name: 'Checkout rome-rollup-clients repository'
         uses: actions/checkout@main
         with:
-          repository: rome-protocol/rome-rollup-clients
+          repository: rome-labs/rome-rollup-clients
           path: rome-rollup-clients
           token: ${{ secrets.GIT_ROLLUP_TOKEN }}
           
@@ -32,14 +32,14 @@ jobs:
           context: rome-rollup-clients/
           push: true
           file: rome-rollup-clients/op-geth/Dockerfile
-          tags: romeprotocol/rollup-op-geth:${{github.ref_name}}
-          labels: romeprotocol/rollup-op-geth:${{github.ref_name}}
+          tags: romelabs/rollup-op-geth:${{github.ref_name}}
+          labels: romelabs/rollup-op-geth:${{github.ref_name}}
           
       - name: 'Set latest tag'
         if: |
           ( github.ref_name == 'main' )
         run: |
-          docker pull romeprotocol/rollup-op-geth:${{github.ref_name}}
-          docker tag romeprotocol/rollup-op-geth:${{github.ref_name}} romeprotocol/rollup-op-geth:latest
-          docker push romeprotocol/rollup-op-geth:latest
+          docker pull romelabs/rollup-op-geth:${{github.ref_name}}
+          docker tag romelabs/rollup-op-geth:${{github.ref_name}} romelabs/rollup-op-geth:latest
+          docker push romelabs/rollup-op-geth:latest
 
