@@ -271,7 +271,7 @@ fi
 if [ ! -f "$JWT_PATH" ]; then
     warn "JWT secret does not exist. Creating..."
     # Use the correct variable substitution syntax in the heredoc
-    echo 'a535c9f4f9df8e00cd6a15a7baa74bb92ca47ebdf59b6f3f2d8a8324b6c1767c' > "${JWT_PATH}"
+    echo "${JWT_SECRET}" > "${JWT_PATH}"
     # openssl rand -hex 32 > "${JWT_PATH}"
     # Print the path to the JWT secret
     log "JWT secret created at ${JWT_PATH}"
