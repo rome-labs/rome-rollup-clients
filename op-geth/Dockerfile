@@ -2,12 +2,12 @@ FROM alpine AS base
 
 WORKDIR /app
 
+ARG GETH_BRANCH="older-optimism"
 ENV GOARCH="amd64"
 
 RUN apk add --no-cache git make gcc musl-dev linux-headers go
 
-RUN git clone --branch v0.1.0 --single-branch https://github.com/rome-protocol/op-geth --depth=1
-
+RUN git clone --branch $GETH_BRANCH https://github.com/rome-labs/op-geth --depth=1
 RUN cd op-geth &&  make geth
 
 FROM nginx:alpine AS run

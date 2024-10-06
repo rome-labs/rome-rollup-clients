@@ -3,9 +3,15 @@ name: build_images
 on:
   push:
   workflow_dispatch:
+    inputs:
+      op-geth_branch:
+        description: 'op-geth branch name to use for builging the image'
+        required: false
+        default: 'older-optimism'
 
 env:
   REF_NAME: ${{github.ref_name}}
+  OP_GETH_REF_NAME: ${{ github.event.inputs.op-geth_branch || 'older-optimism' }}
 
 permissions:
   contents: read
@@ -16,10 +22,23 @@ jobs:
       - name: 'Checkout rome-rollup-clients repository'
         uses: actions/checkout@main
         with:
-          repository: rome-protocol/rome-rollup-clients
+          repository: rome-labs/rome-rollup-clients
           path: rome-rollup-clients
           token: ${{ secrets.GIT_ROLLUP_TOKEN }}
           
+      - name: 'Determine op-geth branch from commit message'
+        if: ${{ github.event_name == 'push' }}
+        run: |
+          CLIENT_BRANCH="${{ github.ref_name }}"
+          if [ "$CLIENT_BRANCH" != "main" ]; then
+
+            # Get op-geth branch name from commit message if provide
+            if [[ "${{ github.event.head_commit.message }}" =~ "op-geth-branch:" ]]; then
+              GETH_BRANCH_NAME=$(echo "${{ github.event.head_commit.message }}" | grep -oP 'op-geth-branch:\s*\K[^,;\s]+')
+              echo "OP_GETH_REF_NAME=$GETH_BRANCH_NAME" >> $GITHUB_ENV
+            fi
+          fi
+
       - name: 'Login to Docker Hub'
         uses: docker/login-action@v3
         with:
@@ -32,14 +51,16 @@ jobs:
           context: rome-rollup-clients/
           push: true
           file: rome-rollup-clients/op-geth/Dockerfile
-          tags: romeprotocol/rollup-op-geth:${{github.ref_name}}
-          labels: romeprotocol/rollup-op-geth:${{github.ref_name}}
+          tags: romelabs/rollup-op-geth:${{github.ref_name}}
+          labels: romelabs/rollup-op-geth:${{github.ref_name}}
+          build-args: |
+            "GETH_BRANCH=${{env.OP_GETH_REF_NAME}}"
           
       - name: 'Set latest tag'
         if: |
-          ( github.ref_name == 'main' )
+          ( github.ref_name == 'main' && github.event_name == 'push')
         run: |
-          docker pull romeprotocol/rollup-op-geth:${{github.ref_name}}
-          docker tag romeprotocol/rollup-op-geth:${{github.ref_name}} romeprotocol/rollup-op-geth:latest
-          docker push romeprotocol/rollup-op-geth:latest
+          docker pull romelabs/rollup-op-geth:${{github.ref_name}}
+          docker tag romelabs/rollup-op-geth:${{github.ref_name}} romelabs/rollup-op-geth:latest
+          docker push romelabs/rollup-op-geth:latest
 

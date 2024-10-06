@@ -69,61 +69,6 @@ if [ ! -f "$GETH_BINARY" ]; then
     GETH_BINARY=$(which geth)
 fi
 
-# Process named arguments
-while [[ $# -gt 0 ]]; do
-  case $1 in
-    --geth-name)
-      GETH_NAME="$2"
-      shift # past argument
-      shift # past value
-      ;;
-    --chain-id)
-      CHAIN_ID="$2"
-      shift # past argument
-      shift # past value
-      ;;
-    --gas-limit)
-      GASLIMIT="$2"
-      shift # past argument
-      shift # past value
-      ;;
-    --http-port)
-      HTTP_PORT="$2"
-      shift # past argument
-      shift # past value
-      ;;
-    --engine-port)
-      ENGINE_PORT="$2"
-      shift # past argument
-      shift # past value
-      ;;
-    --discovery-port)
-      DISCOVERY_PORT="$2"
-      shift # past argument
-      shift # past value
-      ;;
-    --geth-binary)
-      GETH_BINARY="$2"
-      shift # past argument
-      shift # past value
-      ;;
-    --geth-base-data-dir)
-      GETH_BASE_DATA_DIR="$2"
-      shift # past argument
-      shift # past value
-      ;;
-    --account-password)
-      ACCOUNT_PASSWORD="$2"
-      shift # past argument
-      shift # past value
-      ;;
-    *)    # unknown option
-      error "Unknown option: $1"
-      exit 1
-      ;;
-  esac
-done
-
 # ********************
 # Check if Geth binary exists
 # ********************
@@ -154,7 +99,6 @@ JWT_PATH="${GETH_DATA_DIR}/jwtsecret"
 # ********************
 
 log "Using GETH_NAME: $GETH_NAME"
-log "Using ROLLUP_ID: $ROLLUP_ID"
 log "Using CHAIN_ID: $CHAIN_ID"
 log "Using GASLIMIT: $GASLIMIT"
 log "Using HTTP_PORT: $HTTP_PORT"
@@ -171,39 +115,15 @@ log "Using JWT PATH: $JWT_PATH"
 # Setup
 # ********************
 
-log "Setting up Geth data directory to ${GETH_DATA_DIR}"
-rm -rf ${GETH_DATA_DIR}/geth
-mkdir -p ${GETH_DATA_DIR}
+log "Checking if Geth data directory exists at ${GETH_DATA_DIR}"
 
-# ********************
-# Account Setup
-# ********************
-
-# Get the list of existing accounts
-EXISTING_ACCOUNTS=$($GETH_BINARY --datadir $GETH_DATA_DIR account list | cut -d ' ' -f 3)
-
-# Save password to a temporary file securely
-PASSWORD_FILE=$(mktemp)
-echo "$ACCOUNT_PASSWORD" > $PASSWORD_FILE
-
-# Check if any account exists
-if [ -z "$EXISTING_ACCOUNTS" ]; then
-    warn "No existing account found. Creating a new one..."
-
-    NEW_ACCOUNT_OUTPUT=$($GETH_BINARY --datadir $GETH_DATA_DIR account new --password $PASSWORD_FILE 2>&1)
-
-    # Parse the public address from the output
-    PUBLIC_ADDRESS=$(echo "$NEW_ACCOUNT_OUTPUT" | grep "Public address of the key:" | awk '{print $NF}' | sed 's/^0x//')
-
-    log "New account created with address: $PUBLIC_ADDRESS"
+if [ ! -d "${GETH_DATA_DIR}" ]; then
+    log "Setting up Geth data directory at ${GETH_DATA_DIR}"
+    mkdir -p "${GETH_DATA_DIR}"
 else
-    warn "An existing account was found. Using the first one found..."
-    # Use the first account from the list
-    PUBLIC_ADDRESS=$(echo "$EXISTING_ACCOUNTS" | head -n 1 | sed 's/[\{\}]//g; s/^0x//')
-    log "Using existing account: $PUBLIC_ADDRESS"
+    log "Geth data directory already exists at ${GETH_DATA_DIR}"
 fi
 
-log "[Ignored] Public address set to: $PUBLIC_ADDRESS"
 log "[Current] Genesis address set to: $GENESIS_ADDRESS"
 
 # ********************
@@ -250,7 +170,7 @@ if [ ! -f "$GENESIS_FILE_PATH" ]; then
   },
   "number": 0,
   "gasUsed": "0x0",
-  "baseFeePerGas": "0x1",
+  "baseFeePerGas": "0x0",
   "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000"
 }
 EOL
@@ -271,7 +191,7 @@ fi
 if [ ! -f "$JWT_PATH" ]; then
     warn "JWT secret does not exist. Creating..."
     # Use the correct variable substitution syntax in the heredoc
-    echo 'a535c9f4f9df8e00cd6a15a7baa74bb92ca47ebdf59b6f3f2d8a8324b6c1767c' > "${JWT_PATH}"
+    echo "${JWT_SECRET}" > "${JWT_PATH}"
     # openssl rand -hex 32 > "${JWT_PATH}"
     # Print the path to the JWT secret
     log "JWT secret created at ${JWT_PATH}"
