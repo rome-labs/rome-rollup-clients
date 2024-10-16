@@ -1,0 +1,18 @@
+name: Workflow to run tests manually
+
+on:
+  workflow_dispatch:
+    inputs:
+      op_geth_ref_name:
+        type: string
+        description: 'op_geth branch name to use for building the image'
+        required: false
+        default: 'older-optimism'
+
+jobs: 
+  call-reusable-tests:
+    uses: ./.github/workflows/reusable_wf_build.yml
+    secrets: inherit
+    with:
+      op_geth_ref_name: ${{ inputs.op_geth_ref_name }}
+      

@@ -7,7 +7,7 @@ ENV GOARCH="amd64"
 
 RUN apk add --no-cache git make gcc musl-dev linux-headers go
 
-RUN git clone --branch $GETH_BRANCH https://github.com/rome-labs/op-geth --depth=1
+COPY ../../op-geth /app/op-geth
 RUN cd op-geth &&  make geth
 
 FROM nginx:alpine AS run
@@ -28,9 +28,9 @@ RUN apk add --no-cache bash openssl nodejs npm
 # Copy the Geth binary, Nginx configuration, SSL generation script, and other necessary files
 COPY --from=base /app/op-geth/build/bin/geth /usr/local/bin/geth
 
-COPY op-geth/scripts scripts
-COPY op-geth/nginx.conf /etc/nginx/nginx.conf
-COPY op-geth/run.sh ./run.sh
+COPY rome-rollup-clients/op-geth/scripts scripts
+COPY rome-rollup-clients/op-geth/nginx.conf /etc/nginx/nginx.conf
+COPY rome-rollup-clients/op-geth/run.sh ./run.sh
 
 # Expose ports for Nginx and Express server
 EXPOSE 80

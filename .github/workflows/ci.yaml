@@ -1,7 +1,6 @@
 name: build_images
 
 on:
-  push:
   workflow_dispatch:
     inputs:
       op-geth_branch:
@@ -58,7 +57,7 @@ jobs:
           
       - name: 'Set latest tag'
         if: |
-          ( github.ref_name == 'main' && github.event_name == 'push')
+          ( github.ref_name == 'main' )
         run: |
           docker pull romelabs/rollup-op-geth:${{github.ref_name}}
           docker tag romelabs/rollup-op-geth:${{github.ref_name}} romelabs/rollup-op-geth:latest
