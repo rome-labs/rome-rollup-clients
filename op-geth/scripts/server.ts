@@ -1,11 +1,10 @@
 import express from 'express';
-import path from 'path';
 import airdropRoute from './routes/airdrop';
 import jwtRoute from './routes/jwt';
 import loadEnv from './utils/env';
 
 const app = express();
-const { port, host } = loadEnv();
+const { port, host, airdropTitle } = loadEnv();
 
 app.set('view engine', 'ejs');
 
@@ -16,7 +15,7 @@ app.use('/airdrop', airdropRoute);
 app.use('/jwt', jwtRoute);
 
 app.get('/request_airdrop', (req, res) => {
-  res.render('index', { HOST: host });
+  res.render('index', { HOST: host, AIRDROP_TITLE: airdropTitle });
 });
 
 app.listen(port, () => {

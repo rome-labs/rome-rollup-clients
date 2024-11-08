@@ -7,6 +7,7 @@ interface Config {
   senderAddr: string;
   privateKey: string;
   host: string;
+  airdropTitle: string;
 }
 
 export default function loadEnv(): Config {
@@ -27,6 +28,7 @@ export default function loadEnv(): Config {
   const privateKey = process.env.GENESIS_PRIVATE_KEY || '';
 
   const host = process.env.GETH_HOST || 'localhost:3000';
+  const airdropTitle = process.env.AIRDROP_TITLE || '';
 
-  return { httpAddr, dataDir, password, port, jwtSecretPath, senderAddr, privateKey, host };
+  return { httpAddr, dataDir, password, port, jwtSecretPath, senderAddr, privateKey, host, airdropTitle };
 }
