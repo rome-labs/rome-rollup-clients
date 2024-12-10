@@ -52,13 +52,11 @@
         input[type="number"],
         button {
             width: calc(100% - 22px);
-            /* Align button width with text inputs */
             padding: 10px;
             margin: 10px 0;
             border-radius: 4px;
             border: 1px solid #ccc;
             box-sizing: border-box;
-            /* Ensures padding and border are included in the width */
         }
 
         button {
@@ -74,9 +72,21 @@
 
         .form-group {
             margin-bottom: 10px;
-            /* Space between fields */
         }
+        
+        .captcha-container {
+            margin-top: 20px;
+            margin-left: 20px;
+            text-align: center;
+        }
+
+        .airdrop-notes {
+            font-size: 12px;
+            color: #5E0A60;
+        }
+
     </style>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 
 <body>
@@ -95,9 +105,18 @@
                 <input type="number" id="amount" placeholder="Enter Amount" required>
             </div>
             <button type="submit">Request Airdrop</button>
+            <!-- Add reCAPTCHA widget -->
+            <div class="captcha-container">
+                <div class="g-recaptcha" data-sitekey="<%= RECAPTCHA_SITE_KEY %>"></div>
+            </div>
+
         </form>
 
         <p id="responseMessage"></p>
+        <br/>
+        <br/>
+        <p class="airdrop-notes">Note: Airdrop limit max 100 tokens per wallet in six hours.</p>
+
     </div>
 
     <script>
@@ -112,36 +131,55 @@
             const amount = document.getElementById('amount').value;
             const responseMessage = document.getElementById('responseMessage');
 
+            // Validate the Ethereum address
             if (!isValidEthereumAddress(walletAddress)) {
                 responseMessage.textContent = 'Invalid wallet address. Please enter a valid Ethereum address.';
                 return;
             }
 
-            fetch('<%= HOST %>/airdrop', {
+            // Conditionally validate CAPTCHA
+            let captchaResponse = null;
+            if ("<%= RECAPTCHA_SITE_KEY %>") {
+                captchaResponse = grecaptcha.getResponse();
+                if (!captchaResponse) {
+                    responseMessage.textContent = 'Please complete the CAPTCHA.';
+                    return;
+                }
+            }
+
+            // Send POST request with reCAPTCHA response
+            fetch('/airdrop', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
                     recipientAddr: walletAddress,
-                    amount: amount
+                    amount: amount,
+                    captchaResponse: captchaResponse
                 })
             })
-                .then(response => {
-                    if (response.status === 200) {
-                        text = 'Airdrop successful.'
-                        responseMessage.textContent = text;
-                        console.log(data.json());
-                    } else if (response.status === 429) {
-                        text = 'Rate limit exceeded. You can only receive a maximum of 100 tokens within 6 hours.'
-                        responseMessage.textContent = text;
-                        console.error('Error:', text);
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        responseMessage.textContent = 'Airdrop successful.';
+                        console.log(`Airdrop successful. Wallet Address: ${walletAddress}, Amount: ${amount}`);
+                    } else if (data.error === 'CAPTCHA verification failed.') {
+                        responseMessage.textContent = 'CAPTCHA verification failed. Please try again.';
+                        console.error('Error: CAPTCHA verification failed.');
+                    } else if (data.error === 'Rate limit exceeded.') {
+                        responseMessage.textContent = 'Rate limit exceeded. Please wait and try again later.';
+                        console.error('Error: Rate limit exceeded.');
                     } else {
-                        text = 'Airdrop failed. Please try again.'
-                        responseMessage.textContent = text;
-                        console.error('Error:', text);
+                        responseMessage.textContent = 'Airdrop failed. Please try again.';
+                        console.error('Error: Airdrop failed.');
                     }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    responseMessage.textContent = 'An error occurred. Please try again later.';
                 });
+                grecaptcha.reset();
         });
     </script>
 

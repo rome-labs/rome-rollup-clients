@@ -6,11 +6,11 @@ on:
       op-geth_branch:
         description: 'op-geth branch name to use for builging the image'
         required: false
-        default: 'older-optimism'
+        default: 'main'
 
 env:
   REF_NAME: ${{github.ref_name}}
-  OP_GETH_REF_NAME: ${{ github.event.inputs.op-geth_branch || 'older-optimism' }}
+  OP_GETH_REF_NAME: ${{ github.event.inputs.op-geth_branch || 'main' }}
 
 permissions:
   contents: read

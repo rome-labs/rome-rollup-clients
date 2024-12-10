@@ -6,6 +6,7 @@
     "ejs": "^3.1.10",
     "express": "^4.18.3",
     "jsonwebtoken": "^9.0.2",
+    "axios": "^1.5.0",
     "web3": "^4.6.0"
   },
   "devDependencies": {
@@ -15,7 +16,8 @@
     "chai": "^5.1.0",
     "mocha": "^10.3.0",
     "ts-node": "^10.9.2",
-    "typescript": "^5.4.2"
+    "typescript": "^5.4.2",
+    "@types/axios": "^0.14.0"
   },
   "scripts": {
     "send-geth-tx": "ts-node ./send-geth-tx.ts",

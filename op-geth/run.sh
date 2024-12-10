@@ -156,6 +156,7 @@ if [ ! -f "$GENESIS_FILE_PATH" ]; then
     "shanghaiTime": 0,
     "bedrockBlock": 0,
     "regolithTime": 0,
+    "cancunTime": 0,
     "terminalTotalDifficulty": 0,
     "terminalTotalDifficultyPassed": true
   },
@@ -226,6 +227,7 @@ $GETH_BINARY --datadir "${GETH_DATA_DIR}" \
     --authrpc.vhosts "*" \
     --rpc.txfeecap=0 \
     --rpc.gascap=0 \
+    --txpool.lifetime=1m \
     --authrpc.jwtsecret $JWT_PATH \
     --gcmode=archive \
     --port $DISCOVERY_PORT &

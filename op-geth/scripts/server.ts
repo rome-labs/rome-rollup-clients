@@ -4,7 +4,7 @@ import jwtRoute from './routes/jwt';
 import loadEnv from './utils/env';
 
 const app = express();
-const { port, host, airdropTitle } = loadEnv();
+const { port, host, airdropTitle, recaptchaSiteKey } = loadEnv();
 
 app.set('view engine', 'ejs');
 
@@ -15,7 +15,7 @@ app.use('/airdrop', airdropRoute);
 app.use('/jwt', jwtRoute);
 
 app.get('/request_airdrop', (req, res) => {
-  res.render('index', { HOST: host, AIRDROP_TITLE: airdropTitle });
+  res.render('index', { HOST: host, AIRDROP_TITLE: airdropTitle, RECAPTCHA_SITE_KEY: recaptchaSiteKey });
 });
 
 app.listen(port, () => {

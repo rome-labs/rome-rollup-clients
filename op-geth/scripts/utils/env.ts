@@ -8,6 +8,8 @@ interface Config {
   privateKey: string;
   host: string;
   airdropTitle: string;
+  recaptchaSiteKey: string;
+  recaptchaSecretKey: string;
 }
 
 export default function loadEnv(): Config {
@@ -29,6 +31,8 @@ export default function loadEnv(): Config {
 
   const host = process.env.GETH_HOST || 'localhost:3000';
   const airdropTitle = process.env.AIRDROP_TITLE || '';
+  const recaptchaSiteKey = process.env.RECAPTCHA_SITE_KEY || '';
+  const recaptchaSecretKey = process.env.RECAPTCHA_SITE_SECRET || '';
 
-  return { httpAddr, dataDir, password, port, jwtSecretPath, senderAddr, privateKey, host, airdropTitle };
+  return { httpAddr, dataDir, password, port, jwtSecretPath, senderAddr, privateKey, host, airdropTitle, recaptchaSiteKey, recaptchaSecretKey };
 }

@@ -1,8 +1,8 @@
-FROM alpine AS base
+FROM golang:1.21.1-alpine AS base
 
 WORKDIR /app
 
-ARG GETH_BRANCH="older-optimism"
+ARG GETH_BRANCH="main"
 ENV GOARCH="amd64"
 
 RUN apk add --no-cache git make gcc musl-dev linux-headers go
