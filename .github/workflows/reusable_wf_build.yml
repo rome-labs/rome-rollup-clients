@@ -18,7 +18,7 @@ jobs:
       - name: 'Prepare environment variables from input'
         id: prepare_env
         run: |
-          op_geth_ref_name='${{ inputs.op_geth_ref_name || main' }}'
+          op_geth_ref_name='${{ inputs.op_geth_ref_name || 'main' }}'
           echo "OP_GETH_REF_NAME=$op_geth_ref_name" >> $GITHUB_ENV
 
       - name: 'Checkout rome-rollup-clients repository'
@@ -60,7 +60,7 @@ jobs:
           labels: romelabs/rollup-op-geth:${{env.OP_GETH_REF_NAME}}
 
       - name: 'Set latest tag'
-        if: ${{env.OP_GETH_REF_NAME == main'}}
+        if: ${{env.OP_GETH_REF_NAME == 'main'}}
         run: |
           docker pull romelabs/rollup-op-geth:${{env.OP_GETH_REF_NAME}}
           docker tag romelabs/rollup-op-geth:${{env.OP_GETH_REF_NAME}} romelabs/rollup-op-geth:latest
