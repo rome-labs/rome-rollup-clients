@@ -227,7 +227,7 @@ $GETH_BINARY --datadir "${GETH_DATA_DIR}" \
     --authrpc.vhosts "*" \
     --rpc.txfeecap=0 \
     --rpc.gascap=0 \
-    --txpool.lifetime=1m \
+    --txpool.lifetime=10m \
     --authrpc.jwtsecret $JWT_PATH \
     --gcmode=archive \
     --port $DISCOVERY_PORT &
@@ -239,11 +239,5 @@ $GETH_BINARY --datadir "${GETH_DATA_DIR}" \
 log "Starting nginx"
 nginx -g 'daemon off;' &
 
-# ********************
-# Start Server
-# ********************
-
-log "Starting faucet server"
-cd ./scripts
-npm install
-npm run server
+log "Keeping the container alive"
+tail -f /dev/null

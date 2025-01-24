@@ -27,8 +27,6 @@ RUN apk add --no-cache bash openssl nodejs npm
 
 # Copy the Geth binary, Nginx configuration, SSL generation script, and other necessary files
 COPY --from=base /app/op-geth/build/bin/geth /usr/local/bin/geth
-
-COPY rome-rollup-clients/op-geth/scripts scripts
 COPY rome-rollup-clients/op-geth/nginx.conf /etc/nginx/nginx.conf
 COPY rome-rollup-clients/op-geth/run.sh ./run.sh
 
