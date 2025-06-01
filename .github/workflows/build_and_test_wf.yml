@@ -2,47 +2,58 @@ name: Build op-geth image Workflow
 
 on:
   push:
+  workflow_dispatch:
+    inputs:
+      op_geth_ref_name:
+        type: string
+        description: 'op_geth branch name to use for building the image'
+        required: false
+        default: 'main'
 
 jobs:
-  prepare_env:
+  build:
     runs-on: ubuntu-latest
     env:
       # Set the Branch/Ref of the github repository to be used to tag op-geth docker image
-      ROME_ROLLUP_CLIENT_REF_NAME: ${{github.ref_name}} # If updating this, also update the uses in the job call-reusable-tests at bottom of this file
-      OP_GETH_REF_NAME: "main"
-
-    outputs:
-      rollup_client_ref_name: ${{ steps.set_rollup_client_ref.outputs.rollup_client_ref_name }}
-      op_geth_ref_name: ${{ steps.set_rollup_client_ref.outputs.op_geth_ref_name }}
-
+      ROLLUP_CLIENT_REF_NAME: ${{github.ref_name}} # If updating this, also update the uses in the job call-reusable-tests at bottom of this file
+      OP_GETH_REF_NAME: ${{ inputs.op_geth_ref_name || 'main' }}
+    
     steps:
-      - name: 'Set REF NAME'
-        id: set_rollup_client_ref
-        run: |
-          echo "rollup_client_ref_name=${{ env.ROME_ROLLUP_CLIENT_REF_NAME || 'main' }}" >> $GITHUB_OUTPUT
-          echo "op_geth_ref_name=${{ env.OP_GETH_REF_NAME || 'main' }}" >> $GITHUB_OUTPUT
-
-  call-reusable-build:
-    uses: ./.github/workflows/reusable_wf_build.yml
-    needs: prepare_env
-    secrets: inherit
-    with:
-      op_geth_ref_name: ${{ needs.prepare_env.outputs.op_geth_ref_name }}
-        
-  update-latest-tag:
-    runs-on: ubuntu-latest
-    needs: [prepare_env, call-reusable-build]
-    if: ${{needs.prepare_env.outputs.rollup_client_ref_name == 'main' && needs.prepare_env.outputs.op_geth_ref_name == 'main'}}
-    steps:
+      - name: 'Checkout rome-rollup-clients repository'
+        uses: actions/checkout@main
+        with:
+          repository: rome-labs/rome-rollup-clients
+          path: rome-rollup-clients
+          ref: ${{env.ROLLUP_CLIENT_REF_NAME}}
+          token: ${{ secrets.GIT_ROLLUP_TOKEN }}
+    
+      - name: 'Checkout op-geth reposotory'
+        uses: actions/checkout@master
+        with:
+          path: op-geth
+          repository: rome-labs/op-geth
+          ref: ${{env.OP_GETH_REF_NAME}}
+          token: ${{secrets.GIT_ROLLUP_TOKEN}}
+      
       - name: 'Login to Docker Hub'
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
+      - name: 'Build op-geth image'
+        uses: docker/build-push-action@v4.0.0
+        with:
+          context: .
+          push: true
+          file: rome-rollup-clients/op-geth/Dockerfile
+          tags: romelabs/rollup-op-geth:${{env.ROLLUP_CLIENT_REF_NAME}}
+          labels: romelabs/rollup-op-geth:${{env.ROLLUP_CLIENT_REF_NAME}}
+
       - name: 'Set latest tag'
+        if: ${{env.ROLLUP_CLIENT_REF_NAME == 'main' && env.OP_GETH_REF_NAME == 'main'}}
         run: |
-          docker pull romelabs/rollup-op-geth:${{ needs.prepare_env.outputs.op_geth_ref_name }}
-          docker tag romelabs/rollup-op-geth:${{ needs.prepare_env.outputs.op_geth_ref_name }} romelabs/rollup-op-geth:latest
+          docker pull romelabs/rollup-op-geth:${{env.ROLLUP_CLIENT_REF_NAME}}
+          docker tag romelabs/rollup-op-geth:${{env.ROLLUP_CLIENT_REF_NAME}} romelabs/rollup-op-geth:latest
           docker push romelabs/rollup-op-geth:latest
     
