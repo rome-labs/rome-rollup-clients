@@ -3,7 +3,7 @@ FROM golang:1.22.0-alpine AS base
 WORKDIR /app
 
 ARG GETH_BRANCH="main"
-ENV GOARCH="amd64"
+# ENV GOARCH="amd64"
 
 RUN apk add --no-cache git make gcc musl-dev linux-headers go
 
